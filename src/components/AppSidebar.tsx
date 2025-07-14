@@ -1,10 +1,12 @@
-import { LayoutDashboard, Users, Settings, Menu } from "lucide-react";
+
+import { LayoutDashboard, Users, Settings, Menu, History } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const sidebarItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "User Management", url: "/", icon: Users },
+  { title: "Versions", url: "/versions", icon: History },
   { title: "Master", url: "/master", icon: Settings },
 ];
 
