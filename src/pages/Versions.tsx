@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
@@ -102,19 +101,15 @@ const Versions = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Version</TableHead>
                     <TableHead>Date & Time</TableHead>
                     <TableHead>Author</TableHead>
-                    <TableHead>Description</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Size</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {versions.map((version) => (
                     <TableRow key={version.id}>
-                      <TableCell className="font-medium">{version.id}</TableCell>
                       <TableCell>
                         <div>
                           <div className="font-medium">{version.date}</div>
@@ -122,7 +117,6 @@ const Versions = () => {
                         </div>
                       </TableCell>
                       <TableCell>{version.author}</TableCell>
-                      <TableCell className="max-w-xs truncate">{version.description}</TableCell>
                       <TableCell>
                         <Badge 
                           variant={version.status === 'current' ? 'default' : 'secondary'}
@@ -131,7 +125,6 @@ const Versions = () => {
                           {version.status === 'current' ? 'Current' : 'Archived'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm text-gray-500">{version.size}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <DropdownMenu>
