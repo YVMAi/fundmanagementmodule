@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -8,6 +9,7 @@ interface DashboardLockState {
 }
 
 const LOCK_TIMEOUT = 10 * 60 * 1000; // 10 minutes in milliseconds
+const WARNING_TIME = 9 * 60 * 1000; // 9 minutes (1 minute before expiry)
 const STORAGE_KEY = 'dashboard_lock_state';
 
 export const useDashboardLock = (currentUser: string) => {
@@ -18,6 +20,7 @@ export const useDashboardLock = (currentUser: string) => {
     lockTime: null,
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [warningShown, setWarningShown] = useState(false);
 
   // Load initial state from localStorage
   useEffect(() => {
@@ -41,7 +44,7 @@ export const useDashboardLock = (currentUser: string) => {
     }
   }, [currentUser]);
 
-  // Monitor for lock expiration
+  // Monitor for lock expiration and warnings
   useEffect(() => {
     const interval = setInterval(() => {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -49,16 +52,30 @@ export const useDashboardLock = (currentUser: string) => {
         const parsedState: DashboardLockState = JSON.parse(stored);
         const now = Date.now();
         
-        if (parsedState.lockTime && now - parsedState.lockTime > LOCK_TIMEOUT) {
-          const clearedState = { isLocked: false, lockedBy: null, lockTime: null };
-          setLockState(clearedState);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(clearedState));
+        if (parsedState.lockTime && parsedState.lockedBy === currentUser) {
+          const timeElapsed = now - parsedState.lockTime;
           
-          if (parsedState.lockedBy === currentUser) {
+          // Show warning at 9 minutes (1 minute before expiry)
+          if (timeElapsed >= WARNING_TIME && timeElapsed < LOCK_TIMEOUT && !warningShown) {
+            setWarningShown(true);
+            toast({
+              title: "Session Expiry Warning",
+              description: "Your editing session will expire in 1 minute due to inactivity.",
+              variant: "destructive"
+            });
+          }
+          
+          // Lock expired
+          if (timeElapsed > LOCK_TIMEOUT) {
+            const clearedState = { isLocked: false, lockedBy: null, lockTime: null };
+            setLockState(clearedState);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(clearedState));
             setIsEditing(false);
+            setWarningShown(false);
+            
             toast({
               title: "Session Expired",
-              description: "Your editing session has expired due to inactivity.",
+              description: "Your session has expired. Please reopen the sheet to make further changes.",
               variant: "destructive"
             });
           }
@@ -67,13 +84,13 @@ export const useDashboardLock = (currentUser: string) => {
     }, 1000); // Check every second
 
     return () => clearInterval(interval);
-  }, [currentUser, toast]);
+  }, [currentUser, toast, warningShown]);
 
   const acquireLock = useCallback(() => {
     if (lockState.isLocked && lockState.lockedBy !== currentUser) {
       toast({
-        title: "Dashboard Locked",
-        description: `Dashboard is currently being edited by ${lockState.lockedBy}`,
+        title: "Sheet Currently Locked",
+        description: `This sheet is currently being edited by ${lockState.lockedBy}. You may view it in read-only mode.`,
         variant: "destructive"
       });
       return false;
@@ -87,11 +104,14 @@ export const useDashboardLock = (currentUser: string) => {
     
     setLockState(newState);
     setIsEditing(true);
+    setWarningShown(false);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
+    
+    console.log(`Lock acquired by ${currentUser} at ${new Date().toISOString()}`);
     
     toast({
       title: "Edit Mode Enabled",
-      description: "You can now edit the dashboard",
+      description: "You can now edit the dashboard. Lock will expire after 10 minutes of inactivity.",
     });
     
     return true;
@@ -101,13 +121,16 @@ export const useDashboardLock = (currentUser: string) => {
     const newState = { isLocked: false, lockedBy: null, lockTime: null };
     setLockState(newState);
     setIsEditing(false);
+    setWarningShown(false);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
+    
+    console.log(`Lock released by ${currentUser} at ${new Date().toISOString()}`);
     
     toast({
       title: "Edit Mode Disabled",
-      description: "Dashboard editing has been disabled",
+      description: "Dashboard editing has been disabled and lock has been released.",
     });
-  }, [toast]);
+  }, [toast, currentUser]);
 
   const updateActivity = useCallback(() => {
     if (isEditing && lockState.lockedBy === currentUser) {
@@ -117,6 +140,9 @@ export const useDashboardLock = (currentUser: string) => {
       };
       setLockState(newState);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
+      setWarningShown(false); // Reset warning when user is active
+      
+      console.log(`Activity updated by ${currentUser} at ${new Date().toISOString()}`);
     }
   }, [isEditing, lockState, currentUser]);
 

@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit, Lock, Unlock, Download, FileText, Save } from "lucide-react";
+import { Edit, Lock, Unlock, Download, FileText, Save, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useDashboardLock } from "@/hooks/useDashboardLock";
 
 export default function Dashboard() {
@@ -21,11 +22,13 @@ export default function Dashboard() {
       document.addEventListener('click', handleActivity);
       document.addEventListener('keypress', handleActivity);
       document.addEventListener('scroll', handleActivity);
+      document.addEventListener('mousemove', handleActivity);
       
       return () => {
         document.removeEventListener('click', handleActivity);
         document.removeEventListener('keypress', handleActivity);
         document.removeEventListener('scroll', handleActivity);
+        document.removeEventListener('mousemove', handleActivity);
       };
     }
   }, [isEditing, updateActivity]);
@@ -34,6 +37,16 @@ export default function Dashboard() {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleSave = () => {
+    // In a real implementation, this would save the data
+    console.log('Saving dashboard data...');
+    releaseLock(); // Release lock on save as per BRD
+  };
+
+  const handleExitEdit = () => {
+    releaseLock(); // Release lock on exit as per BRD
   };
 
   const fundSummaryData = [
@@ -92,15 +105,25 @@ export default function Dashboard() {
               )}
               
               {isEditing ? (
-                <Button 
-                  onClick={releaseLock}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Unlock className="h-4 w-4" />
-                  Stop Editing
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    onClick={handleSave}
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <Save className="h-4 w-4" />
+                    Save & Release Lock
+                  </Button>
+                  <Button 
+                    onClick={handleExitEdit}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <Unlock className="h-4 w-4" />
+                    Exit Edit Mode
+                  </Button>
+                </div>
               ) : (
                 <Button 
                   onClick={acquireLock}
@@ -114,10 +137,6 @@ export default function Dashboard() {
               )}
               
               <Button variant="outline" size="sm" className="flex items-center gap-2">
-                <Save className="h-4 w-4" />
-                Save
-              </Button>
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
                 <Download className="h-4 w-4" />
                 Export Excel
               </Button>
@@ -130,6 +149,17 @@ export default function Dashboard() {
         </header>
 
         <main className="p-6">
+          {/* Lock Status Alert */}
+          {isLocked && lockedBy !== currentUser && (
+            <Alert className="mb-6" variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Sheet Currently Locked</AlertTitle>
+              <AlertDescription>
+                This sheet is currently being edited by {lockedBy}. You may view it in read-only mode.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Fund Management Dashboard */}
           <div className="mb-8">
             <h2 className="text-xl font-bold text-hdfc-primary mb-6">Fund Management Dashboard</h2>
@@ -154,7 +184,14 @@ export default function Dashboard() {
                           <Input 
                             value={item.amount}
                             readOnly={!isEditing}
-                            className="text-center border-0 bg-transparent focus:bg-white focus:border"
+                            className={`text-center ${isEditing ? 'border focus:bg-white focus:border-ring' : 'border-0 bg-transparent cursor-default'}`}
+                            onChange={(e) => {
+                              if (isEditing) {
+                                updateActivity();
+                                // Handle value change here
+                                console.log('Field updated:', item.description, e.target.value);
+                              }
+                            }}
                           />
                         </TableCell>
                       </TableRow>
