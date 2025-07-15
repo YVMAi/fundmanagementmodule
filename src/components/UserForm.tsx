@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,8 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
     emailNotifications: user?.emailNotifications || false,
     ...user
   });
+
+  const isEditing = !!user;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +102,12 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="focus:ring-hdfc-accent"
+                readOnly={isEditing}
+                disabled={isEditing}
               />
+              {isEditing && (
+                <p className="text-xs text-muted-foreground">Email cannot be changed when editing</p>
+              )}
             </div>
             
             <div className="space-y-2">
