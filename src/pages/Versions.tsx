@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,8 @@ const versions = [
     author: "John Doe",
     description: "Updated user management features",
     status: "current",
-    size: "2.4 MB"
+    size: "2.4 MB",
+    tag: null
   },
   {
     id: "v1.4.1",
@@ -26,7 +28,8 @@ const versions = [
     author: "Jane Smith",
     description: "Bug fixes and performance improvements",
     status: "archived",
-    size: "2.3 MB"
+    size: "2.3 MB",
+    tag: "Restored from v1.3.5"
   },
   {
     id: "v1.4.0",
@@ -35,7 +38,8 @@ const versions = [
     author: "Mike Johnson",
     description: "Major feature release with dashboard updates",
     status: "archived",
-    size: "2.5 MB"
+    size: "2.5 MB",
+    tag: null
   },
   {
     id: "v1.3.5",
@@ -44,7 +48,8 @@ const versions = [
     author: "Sarah Wilson",
     description: "Security patches and minor fixes",
     status: "archived",
-    size: "2.2 MB"
+    size: "2.2 MB",
+    tag: null
   },
   {
     id: "v1.3.4",
@@ -53,7 +58,8 @@ const versions = [
     author: "Tom Brown",
     description: "Initial release with core functionality",
     status: "archived",
-    size: "2.1 MB"
+    size: "2.1 MB",
+    tag: "Restored from v1.2.8"
   }
 ];
 
@@ -104,6 +110,7 @@ const Versions = () => {
                     <TableHead>Date & Time</TableHead>
                     <TableHead>Author</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Tag</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -124,6 +131,13 @@ const Versions = () => {
                         >
                           {version.status === 'current' ? 'Current' : 'Archived'}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {version.tag && (
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            {version.tag}
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
