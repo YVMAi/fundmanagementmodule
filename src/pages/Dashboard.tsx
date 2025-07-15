@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Edit, Lock, Unlock, Download, FileText, Save, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useDashboardLock } from "@/hooks/useDashboardLock";
 
 export default function Dashboard() {
@@ -106,23 +107,61 @@ export default function Dashboard() {
               
               {isEditing ? (
                 <div className="flex items-center gap-2">
-                  <Button 
-                    onClick={handleSave}
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
-                    <Save className="h-4 w-4" />
-                    Save & Release Lock
-                  </Button>
-                  <Button 
-                    onClick={handleExitEdit}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
-                    <Unlock className="h-4 w-4" />
-                    Exit Edit Mode
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
+                        <Save className="h-4 w-4" />
+                        Save & Release Lock
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Save & Release Lock</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Changes will be saved and it will become the current version. Are you sure you want to continue?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleSave}>
+                          Save & Release Lock
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
+                        <Unlock className="h-4 w-4" />
+                        Exit Edit Mode
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Exit Edit Mode</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Changes will be discarded. Are you sure you want to exit edit mode without saving?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={handleExitEdit}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Discard Changes
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               ) : (
                 <Button 
