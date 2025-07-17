@@ -7,13 +7,26 @@ import { Input } from "@/components/ui/input";
 import { Edit, Lock, Unlock, Download, FileText, Save, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useDashboardLock } from "@/hooks/useDashboardLock";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const currentUser = "john.doe@hdfccapital.com"; // In real app, get from auth
   
-  const { isLocked, lockedBy, isEditing, canEdit, acquireLock, releaseLock, updateActivity, remainingTime } = useDashboardLock(currentUser);
+  const { 
+    isLocked, 
+    lockedBy, 
+    isEditing, 
+    canEdit, 
+    acquireLock, 
+    releaseLock, 
+    updateActivity, 
+    remainingTime,
+    showExpiryDialog,
+    continueEditing,
+    discardChanges
+  } = useDashboardLock(currentUser);
 
   // Update activity on any interaction
   useEffect(() => {
@@ -87,6 +100,33 @@ export default function Dashboard() {
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         isEditMode={isEditing}
       />
+      
+      {/* Session Expiry Dialog */}
+      <Dialog open={showExpiryDialog} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Session Expiring Soon</DialogTitle>
+            <DialogDescription>
+              Your editing session will expire in 60 seconds. Do you want to continue editing or discard changes?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={discardChanges}
+              className="flex-1"
+            >
+              Discard Changes
+            </Button>
+            <Button 
+              onClick={continueEditing}
+              className="flex-1"
+            >
+              Continue Editing
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       <div className="lg:ml-64 min-h-screen">
         <header className="bg-white border-b border-border p-6">

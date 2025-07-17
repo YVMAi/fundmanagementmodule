@@ -21,6 +21,7 @@ export const useDashboardLock = (currentUser: string) => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [warningShown, setWarningShown] = useState(false);
+  const [showExpiryDialog, setShowExpiryDialog] = useState(false);
 
   // Load initial state from localStorage
   useEffect(() => {
@@ -55,27 +56,24 @@ export const useDashboardLock = (currentUser: string) => {
         if (parsedState.lockTime && parsedState.lockedBy === currentUser) {
           const timeElapsed = now - parsedState.lockTime;
           
-          // Show warning at 9 minutes (1 minute before expiry)
-          if (timeElapsed >= WARNING_TIME && timeElapsed < LOCK_TIMEOUT && !warningShown) {
+          // Show dialog at 9 minutes (1 minute before expiry)
+          if (timeElapsed >= WARNING_TIME && timeElapsed < LOCK_TIMEOUT && !warningShown && !showExpiryDialog) {
             setWarningShown(true);
-            toast({
-              title: "Session Expiry Warning",
-              description: "Your editing session will expire in 1 minute due to inactivity.",
-              variant: "destructive"
-            });
+            setShowExpiryDialog(true);
           }
           
-          // Lock expired
+          // Lock expired - auto discard changes
           if (timeElapsed > LOCK_TIMEOUT) {
             const clearedState = { isLocked: false, lockedBy: null, lockTime: null };
             setLockState(clearedState);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(clearedState));
             setIsEditing(false);
             setWarningShown(false);
+            setShowExpiryDialog(false);
             
             toast({
               title: "Session Expired",
-              description: "Your session has expired. Please reopen the sheet to make further changes.",
+              description: "Your editing session has expired and changes have been discarded.",
               variant: "destructive"
             });
           }
@@ -84,7 +82,7 @@ export const useDashboardLock = (currentUser: string) => {
     }, 1000); // Check every second
 
     return () => clearInterval(interval);
-  }, [currentUser, toast, warningShown]);
+  }, [currentUser, toast, warningShown, showExpiryDialog]);
 
   const acquireLock = useCallback(() => {
     if (lockState.isLocked && lockState.lockedBy !== currentUser) {
@@ -105,6 +103,7 @@ export const useDashboardLock = (currentUser: string) => {
     setLockState(newState);
     setIsEditing(true);
     setWarningShown(false);
+    setShowExpiryDialog(false);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
     
     console.log(`Lock acquired by ${currentUser} at ${new Date().toISOString()}`);
@@ -122,6 +121,7 @@ export const useDashboardLock = (currentUser: string) => {
     setLockState(newState);
     setIsEditing(false);
     setWarningShown(false);
+    setShowExpiryDialog(false);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
     
     console.log(`Lock released by ${currentUser} at ${new Date().toISOString()}`);
@@ -141,10 +141,33 @@ export const useDashboardLock = (currentUser: string) => {
       setLockState(newState);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
       setWarningShown(false); // Reset warning when user is active
+      setShowExpiryDialog(false); // Close dialog if user is active
       
       console.log(`Activity updated by ${currentUser} at ${new Date().toISOString()}`);
     }
   }, [isEditing, lockState, currentUser]);
+
+  const continueEditing = useCallback(() => {
+    // Reset timer to 10 minutes
+    const newState = {
+      ...lockState,
+      lockTime: Date.now(),
+    };
+    setLockState(newState);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
+    setWarningShown(false);
+    setShowExpiryDialog(false);
+    
+    toast({
+      title: "Editing Continued",
+      description: "Timer has been reset to 10 minutes.",
+    });
+  }, [lockState, toast]);
+
+  const discardChanges = useCallback(() => {
+    releaseLock();
+    setShowExpiryDialog(false);
+  }, [releaseLock]);
 
   const remainingTime = lockState.lockTime 
     ? Math.max(0, LOCK_TIMEOUT - (Date.now() - lockState.lockTime))
@@ -159,5 +182,8 @@ export const useDashboardLock = (currentUser: string) => {
     releaseLock,
     updateActivity,
     remainingTime,
+    showExpiryDialog,
+    continueEditing,
+    discardChanges,
   };
 };
