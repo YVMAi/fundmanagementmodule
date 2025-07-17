@@ -22,6 +22,7 @@ export const useDashboardLock = (currentUser: string) => {
   const [isEditing, setIsEditing] = useState(false);
   const [warningShown, setWarningShown] = useState(false);
   const [showExpiryDialog, setShowExpiryDialog] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
 
   // Load initial state from localStorage
   useEffect(() => {
@@ -45,7 +46,7 @@ export const useDashboardLock = (currentUser: string) => {
     }
   }, [currentUser]);
 
-  // Monitor for lock expiration and warnings
+  // Monitor for lock expiration, warnings, and update remaining time
   useEffect(() => {
     const interval = setInterval(() => {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -55,6 +56,10 @@ export const useDashboardLock = (currentUser: string) => {
         
         if (parsedState.lockTime && parsedState.lockedBy === currentUser) {
           const timeElapsed = now - parsedState.lockTime;
+          const timeLeft = Math.max(0, LOCK_TIMEOUT - timeElapsed);
+          
+          // Update remaining time every second
+          setRemainingTime(timeLeft);
           
           // Show dialog at 9 minutes (1 minute before expiry)
           if (timeElapsed >= WARNING_TIME && timeElapsed < LOCK_TIMEOUT && !warningShown && !showExpiryDialog) {
@@ -70,6 +75,7 @@ export const useDashboardLock = (currentUser: string) => {
             setIsEditing(false);
             setWarningShown(false);
             setShowExpiryDialog(false);
+            setRemainingTime(0);
             
             toast({
               title: "Session Expired",
@@ -77,6 +83,8 @@ export const useDashboardLock = (currentUser: string) => {
               variant: "destructive"
             });
           }
+        } else {
+          setRemainingTime(0);
         }
       }
     }, 1000); // Check every second
@@ -122,6 +130,7 @@ export const useDashboardLock = (currentUser: string) => {
     setIsEditing(false);
     setWarningShown(false);
     setShowExpiryDialog(false);
+    setRemainingTime(0);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
     
     console.log(`Lock released by ${currentUser} at ${new Date().toISOString()}`);
@@ -168,10 +177,6 @@ export const useDashboardLock = (currentUser: string) => {
     releaseLock();
     setShowExpiryDialog(false);
   }, [releaseLock]);
-
-  const remainingTime = lockState.lockTime 
-    ? Math.max(0, LOCK_TIMEOUT - (Date.now() - lockState.lockTime))
-    : 0;
 
   return {
     isLocked: lockState.isLocked,
