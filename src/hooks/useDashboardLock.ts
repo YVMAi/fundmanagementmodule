@@ -8,7 +8,7 @@ interface DashboardLockState {
   lockTime: number | null;
 }
 
-const LOCK_TIMEOUT = 10 * 60 * 1000; // 10 minutes in milliseconds
+const LOCK_TIMEOUT = 20 * 60 * 1000; // 10 minutes in milliseconds
 const WARNING_TIME = 9 * 60 * 1000; // 9 minutes (1 minute before expiry)
 const STORAGE_KEY = 'dashboard_lock_state';
 
