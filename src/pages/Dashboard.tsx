@@ -82,7 +82,11 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+      <AppSidebar 
+        isOpen={sidebarOpen} 
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+        isEditMode={isEditing}
+      />
       
       <div className="lg:ml-64 min-h-screen">
         <header className="bg-white border-b border-border p-6">

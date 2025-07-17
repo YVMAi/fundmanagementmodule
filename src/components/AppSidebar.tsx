@@ -2,6 +2,7 @@
 import { LayoutDashboard, Users, Settings, Menu, History } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const sidebarItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -13,9 +14,23 @@ const sidebarItems = [
 interface AppSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
+  isEditMode?: boolean;
 }
 
-export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
+export function AppSidebar({ isOpen, onToggle, isEditMode = false }: AppSidebarProps) {
+  const { toast } = useToast();
+
+  const handleNavigationClick = (e: React.MouseEvent, url: string) => {
+    if (isEditMode && url !== "/dashboard") {
+      e.preventDefault();
+      toast({
+        title: "Navigation Blocked",
+        description: "Please save or exit edit mode before navigating to other pages.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <>
       {/* Mobile overlay */}
@@ -48,10 +63,12 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
             <NavLink
               key={item.title}
               to={item.url}
+              onClick={(e) => handleNavigationClick(e, item.url)}
               className={({ isActive }) => cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
                 "text-white/80 hover:text-white hover:bg-white/10",
-                isActive && "bg-hdfc-accent text-white"
+                isActive && "bg-hdfc-accent text-white",
+                isEditMode && item.url !== "/dashboard" && "opacity-50 cursor-not-allowed hover:bg-transparent"
               )}
             >
               <item.icon className="h-5 w-5" />
@@ -59,6 +76,18 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
             </NavLink>
           ))}
         </nav>
+
+        {/* Edit Mode Warning */}
+        {isEditMode && (
+          <div className="absolute bottom-4 left-4 right-4 bg-yellow-600/20 border border-yellow-500/30 rounded-lg p-3">
+            <div className="text-yellow-200 text-xs font-medium">
+              Edit Mode Active
+            </div>
+            <div className="text-yellow-300/80 text-xs mt-1">
+              Navigation is restricted while editing
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Mobile menu button */}
