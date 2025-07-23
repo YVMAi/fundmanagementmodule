@@ -18,10 +18,10 @@ export const OfflineBanner = ({
   if (isOnline && !isOfflineMode) return null;
 
   return (
-    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-auto">
+    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-lg w-auto">
       <Alert className="bg-destructive text-destructive-foreground border-destructive shadow-lg">
         <WifiOff className="h-4 w-4 flex-shrink-0" />
-        <AlertDescription className="flex flex-col gap-1">
+        <AlertDescription className="flex items-center gap-2 flex-wrap">
           <span className="flex items-center gap-2">
             <strong>You're offline.</strong>
             <span className="text-sm">Changes saved locally.</span>
