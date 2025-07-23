@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { EmailModal } from "@/components/EmailModal";
+import { OfflineBanner } from "@/components/OfflineBanner";
+import { OfflineRecoveryModal } from "@/components/OfflineRecoveryModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -10,12 +12,32 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useDashboardLock } from "@/hooks/useDashboardLock";
+import { useOfflineMode } from "@/hooks/useOfflineMode";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
-  const currentUser = "john.doe@hdfccapital.com"; // In real app, get from auth
-  const currentUserName = "John Doe"; // In real app, get from auth
+  const [showOfflineRecovery, setShowOfflineRecovery] = useState(false);
+  const [fundSummaryData, setFundSummaryData] = useState([
+    { id: 1, description: "HCARE-3: Total Fund Size (I)", amount: "100" },
+    { id: 2, description: "Recallable Distributions as on date (II)", amount: "100" },
+    { id: 3, description: "HCARE-3: Total Fund Size including recallable (III = I+II)", amount: "200" },
+    { id: 4, description: "HCARE-3: Available Fund Size as on date (IV)", amount: "200" },
+    { id: 5, description: "HCARE-3: Available Fund Size including recallable (V = II+IV)", amount: "300" },
+    { id: 6, description: "HCARE-4 (VI)", amount: "200" },
+    { id: 7, description: "Less: Fees & Expenses buffer for Scheme 1", amount: "100" },
+    { id: 8, description: "Less: Money required in Scheme 1 to co-invest with upsize", amount: "100" },
+    { id: 9, description: "Less: Cover for Subline (for Scheme 1)", amount: "100" },
+    { id: 10, description: "HCARE-5 (VII)", amount: "5,000" },
+    { id: 11, description: "Total Fund Size (HCARE-3, 4 & 5) (A = III+VI+VII)", amount: "5,300" },
+    { id: 12, description: "Less: Cover for Subline (for Scheme 2 Upsize)", amount: "300" },
+    { id: 13, description: "Total Available Fund Size (HCARE-3, 4 & 5) (B = V+VI+VII)", amount: "5,000" },
+  ]);
+  
+  const currentUser = "john.doe@hdfccapital.com";
+  const currentUserName = "John Doe";
+  const { toast } = useToast();
   
   const { 
     isLocked, 
@@ -30,6 +52,37 @@ export default function Dashboard() {
     continueEditing,
     discardChanges
   } = useDashboardLock(currentUser);
+
+  const {
+    isOnline,
+    isOfflineMode,
+    hasOfflineData,
+    offlineTimeRemaining,
+    saveOfflineData,
+    getOfflineData,
+    clearOfflineData,
+    restoreOfflineData,
+    formatOfflineTime,
+  } = useOfflineMode(currentUser);
+
+  // Check for offline data on mount
+  useEffect(() => {
+    if (hasOfflineData && !isEditing) {
+      setShowOfflineRecovery(true);
+    }
+  }, [hasOfflineData, isEditing]);
+
+  // Auto-save offline data when editing offline
+  useEffect(() => {
+    if (isOfflineMode && isEditing) {
+      const interval = setInterval(() => {
+        saveOfflineData({ fundSummaryData });
+        console.log('Auto-saved offline data');
+      }, 5000); // Auto-save every 5 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [isOfflineMode, isEditing, fundSummaryData, saveOfflineData]);
 
   // Update activity on any interaction
   useEffect(() => {
@@ -57,30 +110,79 @@ export default function Dashboard() {
   };
 
   const handleSave = () => {
-    // In a real implementation, this would save the data
-    console.log('Saving dashboard data...');
-    releaseLock(); // Release lock on save as per BRD
+    console.log('Saving dashboard data...', { fundSummaryData });
+    
+    if (isOfflineMode) {
+      // Save to local storage when offline
+      saveOfflineData({ fundSummaryData });
+      toast({
+        title: "Saved Offline",
+        description: "Changes saved locally. They will sync when you reconnect.",
+      });
+    } else {
+      // Normal save to backend
+      releaseLock();
+      clearOfflineData(); // Clear any offline data after successful save
+      toast({
+        title: "Changes Saved",
+        description: "Dashboard has been saved successfully.",
+      });
+    }
   };
 
   const handleExitEdit = () => {
-    releaseLock(); // Release lock on exit as per BRD
+    if (isOfflineMode) {
+      // In offline mode, just exit editing but keep offline data
+      releaseLock();
+      toast({
+        title: "Exited Edit Mode",
+        description: "Your offline changes are still saved locally.",
+      });
+    } else {
+      releaseLock();
+    }
   };
 
-  const fundSummaryData = [
-    { description: "HCARE-3: Total Fund Size (I)", amount: "100" },
-    { description: "Recallable Distributions as on date (II)", amount: "100" },
-    { description: "HCARE-3: Total Fund Size including recallable (III = I+II)", amount: "200" },
-    { description: "HCARE-3: Available Fund Size as on date (IV)", amount: "200" },
-    { description: "HCARE-3: Available Fund Size including recallable (V = II+IV)", amount: "300" },
-    { description: "HCARE-4 (VI)", amount: "200" },
-    { description: "Less: Fees & Expenses buffer for Scheme 1", amount: "100" },
-    { description: "Less: Money required in Scheme 1 to co-invest with upsize", amount: "100" },
-    { description: "Less: Cover for Subline (for Scheme 1)", amount: "100" },
-    { description: "HCARE-5 (VII)", amount: "5,000" },
-    { description: "Total Fund Size (HCARE-3, 4 & 5) (A = III+VI+VII)", amount: "5,300" },
-    { description: "Less: Cover for Subline (for Scheme 2 Upsize)", amount: "300" },
-    { description: "Total Available Fund Size (HCARE-3, 4 & 5) (B = V+VI+VII)", amount: "5,000" },
-  ];
+  const handleRestoreOfflineData = () => {
+    const offlineData = restoreOfflineData();
+    if (offlineData && offlineData.fundSummaryData) {
+      setFundSummaryData(offlineData.fundSummaryData);
+      acquireLock(); // Enter edit mode
+      setShowOfflineRecovery(false);
+      toast({
+        title: "Offline Changes Restored",
+        description: "Your previous offline changes have been restored. You can now continue editing.",
+      });
+    }
+  };
+
+  const handleDiscardOfflineData = () => {
+    clearOfflineData();
+    setShowOfflineRecovery(false);
+    toast({
+      title: "Offline Changes Discarded",
+      description: "Previous offline changes have been discarded.",
+    });
+  };
+
+  const handleFieldChange = (id: number, value: string) => {
+    setFundSummaryData(prev => 
+      prev.map(item => 
+        item.id === id ? { ...item, amount: value } : item
+      )
+    );
+    
+    // Auto-save when offline
+    if (isOfflineMode) {
+      saveOfflineData({ 
+        fundSummaryData: fundSummaryData.map(item => 
+          item.id === id ? { ...item, amount: value } : item
+        )
+      });
+    }
+    
+    updateActivity();
+  };
 
   const pipelineData = [
     {
@@ -93,18 +195,34 @@ export default function Dashboard() {
       committed: "HCARE-3 only",
       invested: "HCARE-4 & 5 only",
     },
-    // Add more pipeline data as needed
   ];
+
+  const canEditDashboard = (canEdit && isOnline) || (isOfflineMode && isEditing);
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Offline Banner */}
+      <OfflineBanner 
+        isOnline={isOnline}
+        isOfflineMode={isOfflineMode}
+        timeRemaining={offlineTimeRemaining}
+        formatTime={formatOfflineTime}
+      />
+
+      {/* Offline Recovery Modal */}
+      <OfflineRecoveryModal
+        isOpen={showOfflineRecovery}
+        onRestore={handleRestoreOfflineData}
+        onDiscard={handleDiscardOfflineData}
+        offlineTimestamp={getOfflineData()?.timestamp}
+      />
+
       <AppSidebar 
         isOpen={sidebarOpen} 
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         isEditMode={isEditing}
       />
       
-      {/* Email Modal */}
       <EmailModal
         isOpen={emailModalOpen}
         onClose={() => setEmailModalOpen(false)}
@@ -138,11 +256,16 @@ export default function Dashboard() {
         </DialogContent>
       </Dialog>
       
-      <div className="lg:ml-64 min-h-screen">
+      <div className={`lg:ml-64 min-h-screen ${(!isOnline || isOfflineMode) ? 'pt-16' : ''}`}>
         <header className="bg-white border-b border-border p-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold text-hdfc-primary mb-1">HCARE 3, 4 & 5 Funds Tracking</h1>
+              {isOfflineMode && (
+                <p className="text-sm text-amber-600 font-medium">
+                  Offline Mode - Changes saved locally
+                </p>
+              )}
             </div>
             
             {/* Action Buttons */}
@@ -166,22 +289,28 @@ export default function Dashboard() {
                       <Button 
                         size="sm"
                         className="flex items-center gap-2"
+                        disabled={!isOnline && !isOfflineMode}
                       >
                         <Save className="h-4 w-4" />
-                        Save & Release Lock
+                        {isOfflineMode ? 'Save Offline' : 'Save & Release Lock'}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Save & Release Lock</AlertDialogTitle>
+                        <AlertDialogTitle>
+                          {isOfflineMode ? 'Save Offline' : 'Save & Release Lock'}
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                          Changes will be saved and it will become the current version. Are you sure you want to continue?
+                          {isOfflineMode 
+                            ? 'Changes will be saved locally and synced when you reconnect.' 
+                            : 'Changes will be saved and it will become the current version.'
+                          } Are you sure you want to continue?
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction onClick={handleSave}>
-                          Save & Release Lock
+                          {isOfflineMode ? 'Save Offline' : 'Save & Release Lock'}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -202,16 +331,19 @@ export default function Dashboard() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Exit Edit Mode</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Changes will be discarded. Are you sure you want to exit edit mode without saving?
+                          {isOfflineMode 
+                            ? 'Your offline changes will remain saved locally.' 
+                            : 'Changes will be discarded.'
+                          } Are you sure you want to exit edit mode?
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction 
                           onClick={handleExitEdit}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          className={isOfflineMode ? "" : "bg-destructive text-destructive-foreground hover:bg-destructive/90"}
                         >
-                          Discard Changes
+                          {isOfflineMode ? 'Exit Edit Mode' : 'Discard Changes'}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -220,7 +352,7 @@ export default function Dashboard() {
               ) : (
                 <Button 
                   onClick={acquireLock}
-                  disabled={!canEdit}
+                  disabled={!canEditDashboard}
                   size="sm"
                   className="flex items-center gap-2"
                 >
@@ -234,16 +366,27 @@ export default function Dashboard() {
                 variant="outline" 
                 size="sm" 
                 className="flex items-center gap-2"
+                disabled={!isOnline}
               >
                 <Mail className="h-4 w-4" />
                 Send as Email
               </Button>
               
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2"
+                disabled={!isOnline}
+              >
                 <Download className="h-4 w-4" />
                 Export Excel
               </Button>
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2"
+                disabled={!isOnline}
+              >
                 <FileText className="h-4 w-4" />
                 Export Pdf
               </Button>
@@ -259,6 +402,18 @@ export default function Dashboard() {
               <AlertTitle>Sheet Currently Locked</AlertTitle>
               <AlertDescription>
                 This sheet is currently being edited by {lockedBy}. You may view it in read-only mode.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Offline Mode Alert */}
+          {isOfflineMode && isEditing && (
+            <Alert className="mb-6" variant="default">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Offline Editing Mode</AlertTitle>
+              <AlertDescription>
+                You're editing offline. Changes are being saved locally and will sync when you reconnect.
+                Offline editing expires in: {formatOfflineTime(offlineTimeRemaining)}
               </AlertDescription>
             </Alert>
           )}
@@ -279,7 +434,7 @@ export default function Dashboard() {
                   </TableHeader>
                   <TableBody>
                     {fundSummaryData.map((item, index) => (
-                      <TableRow key={index} className={index % 2 === 0 ? "bg-muted/30" : "bg-white"}>
+                      <TableRow key={item.id} className={index % 2 === 0 ? "bg-muted/30" : "bg-white"}>
                         <TableCell className="font-medium border-r py-3 px-4">
                           {item.description}
                         </TableCell>
@@ -290,9 +445,7 @@ export default function Dashboard() {
                             className={`text-center ${isEditing ? 'border focus:bg-white focus:border-ring' : 'border-0 bg-transparent cursor-default'}`}
                             onChange={(e) => {
                               if (isEditing) {
-                                updateActivity();
-                                // Handle value change here
-                                console.log('Field updated:', item.description, e.target.value);
+                                handleFieldChange(item.id, e.target.value);
                               }
                             }}
                           />
