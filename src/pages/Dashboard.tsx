@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
+import { EmailModal } from "@/components/EmailModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Edit, Lock, Unlock, Download, FileText, Save, AlertTriangle } from "lucide-react";
+import { Edit, Lock, Unlock, Download, FileText, Save, AlertTriangle, Mail } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -12,7 +13,9 @@ import { useDashboardLock } from "@/hooks/useDashboardLock";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
   const currentUser = "john.doe@hdfccapital.com"; // In real app, get from auth
+  const currentUserName = "John Doe"; // In real app, get from auth
   
   const { 
     isLocked, 
@@ -99,6 +102,13 @@ export default function Dashboard() {
         isOpen={sidebarOpen} 
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         isEditMode={isEditing}
+      />
+      
+      {/* Email Modal */}
+      <EmailModal
+        isOpen={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        senderName={currentUserName}
       />
       
       {/* Session Expiry Dialog */}
@@ -218,6 +228,16 @@ export default function Dashboard() {
                   Edit Dashboard
                 </Button>
               )}
+              
+              <Button 
+                onClick={() => setEmailModalOpen(true)}
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2"
+              >
+                <Mail className="h-4 w-4" />
+                Send as Email
+              </Button>
               
               <Button variant="outline" size="sm" className="flex items-center gap-2">
                 <Download className="h-4 w-4" />
