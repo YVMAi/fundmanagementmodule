@@ -44,12 +44,14 @@ export const EmailModal = ({ isOpen, onClose, senderName }: EmailModalProps) => 
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleUserToggle = (userId: string) => {
-    setSelectedUsers(prev =>
-      prev.includes(userId)
-        ? prev.filter(id => id !== userId)
-        : [...prev, userId]
-    );
+  const handleUserToggle = (userId: string, checked: boolean) => {
+    setSelectedUsers(prev => {
+      if (checked) {
+        return [...prev, userId];
+      } else {
+        return prev.filter(id => id !== userId);
+      }
+    });
   };
 
   const handleSelectAll = () => {
@@ -145,7 +147,7 @@ export const EmailModal = ({ isOpen, onClose, senderName }: EmailModalProps) => 
                 checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
                 onCheckedChange={handleSelectAll}
               />
-              <label htmlFor="select-all" className="text-sm font-medium">
+              <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
                 Select All ({filteredUsers.length})
               </label>
             </div>
@@ -160,14 +162,17 @@ export const EmailModal = ({ isOpen, onClose, senderName }: EmailModalProps) => 
               {filteredUsers.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer"
-                  onClick={() => handleUserToggle(user.id)}
+                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50"
                 >
                   <Checkbox
+                    id={`user-${user.id}`}
                     checked={selectedUsers.includes(user.id)}
-                    onCheckedChange={() => handleUserToggle(user.id)}
+                    onCheckedChange={(checked) => handleUserToggle(user.id, checked as boolean)}
                   />
-                  <div className="flex-1 min-w-0">
+                  <label 
+                    htmlFor={`user-${user.id}`}
+                    className="flex-1 min-w-0 cursor-pointer"
+                  >
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium truncate">{user.name}</p>
                       {user.role === "Admin" ? (
@@ -177,7 +182,7 @@ export const EmailModal = ({ isOpen, onClose, senderName }: EmailModalProps) => 
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                  </div>
+                  </label>
                 </div>
               ))}
               {filteredUsers.length === 0 && (
