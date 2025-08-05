@@ -1,0 +1,55 @@
+
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "userManagement": "User Management",
+    "versions": "Versions",
+    "master": "Master"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout",
+    "language": "Language",
+    "selectLanguage": "Select Language"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to HDFC Capital",
+    "overview": "Overview",
+    "statistics": "Statistics",
+    "recentActivity": "Recent Activity"
+  },
+  "userManagement": {
+    "title": "User Management",
+    "addUser": "Add User",
+    "editUser": "Edit User",
+    "deleteUser": "Delete User",
+    "users": "Users",
+    "totalUsers": "Total Users",
+    "activeUsers": "Active Users"
+  },
+  "notifications": {
+    "offline": "You're offline.",
+    "changesSaved": "Changes saved locally.",
+    "willSync": "Will sync when back online",
+    "navigationBlocked": "Navigation Blocked",
+    "saveBeforeNavigating": "Please save or exit edit mode before navigating to other pages.",
+    "editModeActive": "Edit Mode Active",
+    "navigationRestricted": "Navigation is restricted while editing"
+  },
+  "errors": {
+    "pageNotFound": "Page not found",
+    "returnHome": "Return to Home",
+    "somethingWrong": "Oops! Something went wrong"
+  }
+}

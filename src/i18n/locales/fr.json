@@ -1,0 +1,55 @@
+
+{
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "userManagement": "Gestion des utilisateurs",
+    "versions": "Versions",
+    "master": "Maître"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "export": "Exporter",
+    "import": "Importer",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "logout": "Se déconnecter",
+    "language": "Langue",
+    "selectLanguage": "Sélectionner la langue"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue chez HDFC Capital",
+    "overview": "Aperçu",
+    "statistics": "Statistiques",
+    "recentActivity": "Activité récente"
+  },
+  "userManagement": {
+    "title": "Gestion des utilisateurs",
+    "addUser": "Ajouter un utilisateur",
+    "editUser": "Modifier l'utilisateur",
+    "deleteUser": "Supprimer l'utilisateur",
+    "users": "Utilisateurs",
+    "totalUsers": "Total des utilisateurs",
+    "activeUsers": "Utilisateurs actifs"
+  },
+  "notifications": {
+    "offline": "Vous êtes hors ligne.",
+    "changesSaved": "Modifications sauvegardées localement.",
+    "willSync": "Se synchronisera une fois de retour en ligne",
+    "navigationBlocked": "Navigation bloquée",
+    "saveBeforeNavigating": "Veuillez sauvegarder ou quitter le mode édition avant de naviguer vers d'autres pages.",
+    "editModeActive": "Mode édition actif",
+    "navigationRestricted": "La navigation est restreinte pendant l'édition"
+  },
+  "errors": {
+    "pageNotFound": "Page non trouvée",
+    "returnHome": "Retour à l'accueil",
+    "somethingWrong": "Oops ! Quelque chose s'est mal passé"
+  }
+}

@@ -1,15 +1,10 @@
 
 import { LayoutDashboard, Users, Settings, Menu, History } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-
-const sidebarItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "User Management", url: "/", icon: Users },
-  { title: "Versions", url: "/versions", icon: History },
-  { title: "Master", url: "/master", icon: Settings },
-];
+import { LanguageToggle } from "./LanguageToggle";
 
 interface AppSidebarProps {
   isOpen: boolean;
@@ -19,13 +14,21 @@ interface AppSidebarProps {
 
 export function AppSidebar({ isOpen, onToggle, isEditMode = false }: AppSidebarProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
+
+  const sidebarItems = [
+    { title: t('nav.dashboard'), url: "/dashboard", icon: LayoutDashboard },
+    { title: t('nav.userManagement'), url: "/", icon: Users },
+    { title: t('nav.versions'), url: "/versions", icon: History },
+    { title: t('nav.master'), url: "/master", icon: Settings },
+  ];
 
   const handleNavigationClick = (e: React.MouseEvent, url: string) => {
     if (isEditMode && url !== "/dashboard") {
       e.preventDefault();
       toast({
-        title: "Navigation Blocked",
-        description: "Please save or exit edit mode before navigating to other pages.",
+        title: t('notifications.navigationBlocked'),
+        description: t('notifications.saveBeforeNavigating'),
         variant: "destructive"
       });
     }
@@ -49,11 +52,14 @@ export function AppSidebar({ isOpen, onToggle, isEditMode = false }: AppSidebarP
       )}>
         {/* Header */}
         <div className="p-4 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="bg-hdfc-secondary px-2 py-1 rounded text-white font-bold text-sm">
-              HDFC
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-hdfc-secondary px-2 py-1 rounded text-white font-bold text-sm">
+                HDFC
+              </div>
+              <span className="text-white font-semibold">CAPITAL</span>
             </div>
-            <span className="text-white font-semibold">CAPITAL</span>
+            <LanguageToggle />
           </div>
         </div>
 
@@ -61,7 +67,7 @@ export function AppSidebar({ isOpen, onToggle, isEditMode = false }: AppSidebarP
         <nav className="p-4 space-y-2">
           {sidebarItems.map((item) => (
             <NavLink
-              key={item.title}
+              key={item.url}
               to={item.url}
               onClick={(e) => handleNavigationClick(e, item.url)}
               className={({ isActive }) => cn(
@@ -81,10 +87,10 @@ export function AppSidebar({ isOpen, onToggle, isEditMode = false }: AppSidebarP
         {isEditMode && (
           <div className="absolute bottom-4 left-4 right-4 bg-yellow-600/20 border border-yellow-500/30 rounded-lg p-3">
             <div className="text-yellow-200 text-xs font-medium">
-              Edit Mode Active
+              {t('notifications.editModeActive')}
             </div>
             <div className="text-yellow-300/80 text-xs mt-1">
-              Navigation is restricted while editing
+              {t('notifications.navigationRestricted')}
             </div>
           </div>
         )}

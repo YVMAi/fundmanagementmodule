@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Master from "./pages/Master";
 import Versions from "./pages/Versions";
 import NotFound from "./pages/NotFound";
+import './i18n/config';
 
 const queryClient = new QueryClient();
 

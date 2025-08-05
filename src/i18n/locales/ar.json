@@ -1,0 +1,55 @@
+
+{
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "userManagement": "إدارة المستخدمين",
+    "versions": "الإصدارات",
+    "master": "الرئيسي"
+  },
+  "common": {
+    "loading": "جاري التحميل...",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "edit": "تحرير",
+    "delete": "حذف",
+    "search": "بحث",
+    "filter": "تصفية",
+    "export": "تصدير",
+    "import": "استيراد",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "logout": "تسجيل خروج",
+    "language": "اللغة",
+    "selectLanguage": "اختر اللغة"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "welcome": "مرحباً بكم في HDFC Capital",
+    "overview": "نظرة عامة",
+    "statistics": "الإحصائيات",
+    "recentActivity": "النشاط الأخير"
+  },
+  "userManagement": {
+    "title": "إدارة المستخدمين",
+    "addUser": "إضافة مستخدم",
+    "editUser": "تحرير المستخدم",
+    "deleteUser": "حذف المستخدم",
+    "users": "المستخدمون",
+    "totalUsers": "إجمالي المستخدمين",
+    "activeUsers": "المستخدمون النشطون"
+  },
+  "notifications": {
+    "offline": "أنت غير متصل.",
+    "changesSaved": "تم حفظ التغييرات محلياً.",
+    "willSync": "سيتم المزامنة عند العودة للاتصال",
+    "navigationBlocked": "التنقل محجوب",
+    "saveBeforeNavigating": "يرجى الحفظ أو الخروج من وضع التحرير قبل التنقل إلى صفحات أخرى.",
+    "editModeActive": "وضع التحرير نشط",
+    "navigationRestricted": "التنقل مقيد أثناء التحرير"
+  },
+  "errors": {
+    "pageNotFound": "الصفحة غير موجودة",
+    "returnHome": "العودة للصفحة الرئيسية",
+    "somethingWrong": "عذراً! حدث خطأ ما"
+  }
+}
